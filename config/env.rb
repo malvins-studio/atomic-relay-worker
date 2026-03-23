@@ -1,0 +1,7 @@
+require "dotenv/load"
+
+module Config
+  DEVICE_ID = ENV["ATOMIC_DEVICE_ID"]
+  SERVER_URL = ENV["ATOMIC_SERVER_URL"]
+  AUTH_TOKEN = ENV["ATOMIC_AUTH_TOKEN"]
+end
