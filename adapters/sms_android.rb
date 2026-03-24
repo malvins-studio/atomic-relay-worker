@@ -6,6 +6,8 @@ module Adapters
       to = payload["to"]
       body = payload["body"]
 
+      puts "[WORKER] Sending SMS to #{to}"
+
       success = system("termux-sms-send -n '#{to}' '#{body}'")
 
       if success

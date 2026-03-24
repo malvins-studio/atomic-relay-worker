@@ -9,13 +9,18 @@ module Connection
     def start
       ws = WebSocket::Client::Simple.connect(Config.SERVER_URL)
 
+      payload = auth_payload.to_json
       ws.on :open do
-        ws.send(auth_payload.to_json)
-        puts "Connected as #{Config::DEVICE_ID}"
+        ws.send(payload)
+        puts "Connected to server as: #{Config::DEVICE_ID}"
+      rescue => e
+        puts "Send error: #{e.class} - #{e.message}"
+        puts e.backtrace
       end
 
+      msg_handler = method(:handle_message)
       ws.on :message do |msg|
-        handle_message(ws, msg.data)
+        msg_handler.call(ws, msg.data)
       end
 
       ws.on :close do
@@ -30,8 +35,8 @@ module Connection
     def auth_payload
       {
         type: "auth",
-        devide_id: Config::DEVICE_ID,
-        token: Config::TOKEN
+        device_id: Config::DEVICE_ID,
+        token: Config::AUTH_TOKEN
       }
     end
 
@@ -39,6 +44,8 @@ module Connection
       data = JSON.parse(raw)
 
       return unless data["type"] == "job"
+
+      puts "[WORKER] Received job #{data['id']}"
 
       adapter = Adapters.load(data["adapter"])
       result = adapter.perform(data["payload"])
